@@ -23,9 +23,22 @@ load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 # Environment variables
 # ---------------------------------------------------------------------------
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "") or os.environ.get(
-    "SUPABASE_ANON_KEY", ""
+def _env(*names: str) -> str:
+    # Return the first non-empty environment variable among *names*.
+    for name in names:
+        value = os.environ.get(name, "")
+        if value and value.strip():
+            return value.strip()
+    return ""
+
+
+# Canonical names first, then legacy aliases (SUPABASE_PROJECT_URL /
+# SUPABASE_PUBLISHABLE_KEY) so mis-named environment variables still work.
+SUPABASE_URL = _env("SUPABASE_URL", "SUPABASE_PROJECT_URL")
+SUPABASE_KEY = _env(
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_PUBLISHABLE_KEY",
 )
 
 
@@ -39,7 +52,9 @@ def get_supabase_client() -> Client:
     if not SUPABASE_URL or not SUPABASE_KEY:
         raise RuntimeError(
             "Supabase configuration is missing. "
-            "Set SUPABASE_URL and SUPABASE_ANON_KEY (or SUPABASE_SERVICE_ROLE_KEY) in the environment."
+            "Set SUPABASE_URL (or SUPABASE_PROJECT_URL) and "
+            "SUPABASE_ANON_KEY (or SUPABASE_SERVICE_ROLE_KEY / SUPABASE_PUBLISHABLE_KEY) "
+            "in the environment."
         )
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
