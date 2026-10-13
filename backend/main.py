@@ -13,6 +13,7 @@ Endpoints:
   GET  /health            — Health check
 """
 
+import logging
 import os
 from typing import List
 
@@ -33,6 +34,21 @@ from backend.supabase_client import (
     verify_token,
     TokenVerificationError,
 )
+
+try:  # supabase-py >= 2.32 ships the auth client as the `supabase_auth` package
+    from supabase_auth.errors import (
+        AuthApiError,
+        AuthError,
+        AuthWeakPasswordError,
+    )
+except ModuleNotFoundError:  # older supabase-py versions used the `gotrue` package
+    from gotrue.errors import (
+        AuthApiError,
+        AuthError,
+        AuthWeakPasswordError,
+    )
+
+logger = logging.getLogger("rentshield.api")
 
 # ---------------------------------------------------------------------------
 # App configuration
@@ -125,16 +141,37 @@ def signup(body: SignupRequest) -> AuthResponse:
                 "password": body.password,
             }
         )
-    except Exception:
+    except RuntimeError as exc:
+        logger.error("Supabase configuration error during signup: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="The server is missing Supabase configuration (SUPABASE_URL / SUPABASE_ANON_KEY).",
+        )
+    except AuthWeakPasswordError as exc:
+        raise HTTPException(status_code=422, detail=f"Weak password: {exc}")
+    except AuthApiError as exc:
         raise HTTPException(
             status_code=400,
-            detail="Signup failed. The email may already be registered.",
+            detail=_auth_error_message(exc, "Signup failed. Please try again."),
+        )
+    except AuthError:
+        logger.exception("Auth service error during signup")
+        raise HTTPException(
+            status_code=503,
+            detail="The authentication service is unavailable. Please try again shortly.",
+        )
+    except Exception:
+        logger.exception("Unexpected error during signup")
+        raise HTTPException(
+            status_code=500,
+            detail="Signup failed due to an unexpected server error.",
         )
 
     if response.user is None:
         raise HTTPException(status_code=400, detail="Signup failed. Please check your email and password.")
 
     user = response.user
+    # session is None when Supabase requires email confirmation before sign-in.
     session = response.session
 
     return AuthResponse(
@@ -159,10 +196,30 @@ def login(body: LoginRequest) -> AuthResponse:
                 "password": body.password,
             }
         )
-    except Exception:
+    except RuntimeError as exc:
+        logger.error("Supabase configuration error during login: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="The server is missing Supabase configuration (SUPABASE_URL / SUPABASE_ANON_KEY).",
+        )
+    except AuthWeakPasswordError as exc:
+        raise HTTPException(status_code=422, detail=f"Weak password: {exc}")
+    except AuthApiError as exc:
         raise HTTPException(
             status_code=401,
-            detail="Invalid email or password.",
+            detail=_auth_error_message(exc, "Invalid email or password."),
+        )
+    except AuthError:
+        logger.exception("Auth service error during login")
+        raise HTTPException(
+            status_code=503,
+            detail="The authentication service is unavailable. Please try again shortly.",
+        )
+    except Exception:
+        logger.exception("Unexpected error during login")
+        raise HTTPException(
+            status_code=500,
+            detail="Sign in failed due to an unexpected server error.",
         )
 
     if response.user is None or response.session is None:
@@ -275,6 +332,19 @@ def list_risk_checks(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _auth_error_message(exc: Exception, fallback: str) -> str:
+    """Map common Supabase auth errors to clear, user-friendly messages."""
+    message = (str(exc) or "").strip()
+    lowered = message.lower()
+    if "already registered" in lowered or "already exists" in lowered:
+        return "An account with this email already exists. Try signing in instead."
+    if "email not confirmed" in lowered:
+        return "Please confirm your email address before signing in."
+    if "invalid login credentials" in lowered or "invalid credentials" in lowered:
+        return "Invalid email or password."
+    return message or fallback
+
 
 def _row_to_response(row: dict) -> RiskCheckResponse:
     """Convert a database row dict to a RiskCheckResponse model."""
