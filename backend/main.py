@@ -281,10 +281,15 @@ def create_risk_check(
         "evidence_note": body.evidence_note,
     }
 
+    # NOTE: The Supabase client is created with the service-role key
+    # (preferred over the anon key) so RLS is bypassed and inserts
+    # always succeed for authenticated users.  The user's Bearer token
+    # is verified independently via verify_token() in get_current_user().
     try:
         client = get_supabase_client()
         result = client.table("risk_checks").insert(record).execute()
     except Exception:
+        logger.exception("Risk-check insert failed for user_id=%s", user_id)
         raise HTTPException(
             status_code=500,
             detail="Failed to save risk check. Please try again.",
