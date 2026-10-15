@@ -122,6 +122,40 @@ export default function RiskResultPage({
         </div>
       )}
 
+      {/* How this result is calculated */}
+      <div className="rounded-lg border border-[#D1D5DB] bg-[#F8F9FA] p-4">
+        <h3 className="mb-2 text-sm font-semibold text-[#1B2A4A]">
+          How this result is calculated
+        </h3>
+        <ul className="flex list-disc flex-col gap-1.5 pl-4 text-xs leading-relaxed text-[#6B7280]">
+          <li>
+            The result is based entirely on the answers you provided on the
+            Rental Details and Quick Check screens.
+          </li>
+          <li>
+            Warning signs are checked against fixed rules: payment requested
+            before viewing, property not viewed in person, unregulated listing
+            source, unusually low rent (under $150/week), pressure to pay
+            quickly, and no written agreement.
+          </li>
+          <li>
+            Each sign is rated as either a <strong>high concern</strong> or a{" "}
+            <strong>review concern</strong>.
+          </li>
+          <li>
+            The overall level is determined by simple thresholds: two or more
+            high-concern signs produce a <em>High</em> result; one high-concern
+            sign or two to three total signs produce a <em>Review</em> result;
+            zero or one total sign produces a <em>Low</em> result.
+          </li>
+          <li>
+            This screening is a general guide only. It is not proof of fraud,
+            does not constitute legal advice, and should not replace your own
+            due diligence or professional guidance.
+          </li>
+        </ul>
+      </div>
+
       <ArrowButton variant="secondary" onClick={onContinue}>
         Continue to verification plan
       </ArrowButton>

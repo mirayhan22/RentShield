@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { QuickCheckPageProps, QuickCheckAnswers } from "../utils/types";
 import FormSection from "../components/ui/FormSection";
 import ArrowButton from "../components/ui/ArrowButton";
+import PrivacyNotice from "../components/ui/PrivacyNotice";
+import YesNoButton from "../components/ui/YesNoButton";
 
 /**
  * Quick Check screen: four yes/no warning-sign questions.
@@ -117,6 +119,12 @@ export default function QuickCheckPage({
         </p>
       )}
 
+      <PrivacyNotice>
+        Your answers are used to generate a rental-risk screening. If you
+        create an account and submit the check, these details may be saved
+        with your account for your own history.
+      </PrivacyNotice>
+
       <div className="flex flex-col gap-3">
         <ArrowButton onClick={handleSubmit}>
           See my risk result
@@ -128,30 +136,5 @@ export default function QuickCheckPage({
         )}
       </div>
     </div>
-  );
-}
-
-/** Simple Yes/No toggle button */
-function YesNoButton({
-  label,
-  selected,
-  onClick,
-}: {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-colors duration-150 ${
-        selected
-          ? "border-[#2A9D8F] bg-[#2A9D8F]/10 text-[#2A9D8F]"
-          : "border-[#D1D5DB] bg-white text-[#6B7280] hover:border-[#9CA3AF]"
-      }`}
-    >
-      {label}
-    </button>
   );
 }

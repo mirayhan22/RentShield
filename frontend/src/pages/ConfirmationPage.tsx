@@ -1,5 +1,6 @@
 import type { ConfirmationPageProps } from "../utils/types";
 import PrimaryButton from "../components/ui/PrimaryButton";
+import PrivacyNotice from "../components/ui/PrivacyNotice";
 
 /**
  * Confirmation screen: clearly distinguishes successful completion
@@ -221,6 +222,12 @@ export default function ConfirmationPage({
           </ul>
         </div>
       )}
+
+      <PrivacyNotice>
+        Your saved safety checks are associated with your account and stored
+        securely so you can review your history. They include the details and
+        answers you entered during the check.
+      </PrivacyNotice>
 
       {/* Start New Check button */}
       <PrimaryButton variant="secondary" onClick={onStartNew}>
