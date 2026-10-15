@@ -5,6 +5,7 @@ import FormSection from "../components/ui/FormSection";
 import TextInput from "../components/ui/TextInput";
 import { authApi, ApiError } from "../utils/api";
 import { saveSession } from "../utils/auth";
+import PrivacyNotice from "../components/ui/PrivacyNotice";
 
 /**
  * Login / signup screen with email/password validation.
@@ -192,6 +193,12 @@ export default function LoginPage({ onComplete }: LoginPageProps) {
           Enter Demo
         </PrimaryButton>
       </div>
+
+      <PrivacyNotice>
+        Your email is used only for authentication (signing in and creating an
+        account). Any safety checks you save are linked to your account so you
+        can view them later. We do not share your data with third parties.
+      </PrivacyNotice>
 
       <p className="text-center text-xs text-[#9CA3AF]">
         Demo access uses fictional data only. No real account is created.

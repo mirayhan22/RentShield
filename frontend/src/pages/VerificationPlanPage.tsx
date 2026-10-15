@@ -6,6 +6,7 @@ import type {
 import FormSection from "../components/ui/FormSection";
 import TextInput from "../components/ui/TextInput";
 import ArrowButton from "../components/ui/ArrowButton";
+import PrivacyNotice from "../components/ui/PrivacyNotice";
 
 /**
  * Verification Plan screen: action checkboxes and evidence note.
@@ -85,9 +86,15 @@ export default function VerificationPlanPage({
           value={note}
           onChange={setNote}
           placeholder="Record what you have checked or verified so far..."
-          hint="This note is for your own reference. It is stored locally in this prototype."
+          hint="This note is saved with your risk check and linked to your account. Do not include names, phone numbers, passwords, bank details or other sensitive personal information."
           multiline
         />
+        <PrivacyNotice>
+          Your evidence note is saved together with this risk check and
+          associated with your account when you submit. Please do not enter
+          names, phone numbers, passwords, bank details or other sensitive
+          personal information.
+        </PrivacyNotice>
       </div>
 
       {/* Progress summary */}
